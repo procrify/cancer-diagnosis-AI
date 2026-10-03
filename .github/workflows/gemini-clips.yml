@@ -3,6 +3,7 @@ name: Gemini 4 Clip Extraction
 on:
   push:
     branches: [chatgpt-gemini-clips]
+  workflow_dispatch:
 
 jobs:
   build-clips:
