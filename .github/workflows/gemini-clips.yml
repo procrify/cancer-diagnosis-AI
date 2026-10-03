@@ -1,0 +1,39 @@
+name: Gemini 4 Clip Extraction
+
+on:
+  push:
+    branches: [chatgpt-gemini-clips]
+
+jobs:
+  build-clips:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: |
+          python -m pip install --upgrade yt-dlp
+          ffmpeg -version | head -n 1
+      - name: Download source videos
+        run: |
+          mkdir -p sources clips
+          yt-dlp -f "bv*[height<=720]+ba/b[height<=720]" --merge-output-format mp4 -o "sources/worldofai.%(ext)s" "https://www.youtube.com/watch?v=RMTWayrwYkQ"
+          yt-dlp -f "bv*[height<=720]+ba/b[height<=720]" --merge-output-format mp4 -o "sources/breakingai.%(ext)s" "https://www.youtube.com/watch?v=mZd_ToPDDA8"
+      - name: Cut 10 editing clips
+        run: |
+          ffmpeg -y -ss 00:03:56 -to 00:04:08 -i sources/breakingai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/01_mechanical_bee.mp4
+          ffmpeg -y -ss 00:02:18 -to 00:02:30 -i sources/breakingai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/02_mechanical_butterfly.mp4
+          ffmpeg -y -ss 00:01:38 -to 00:01:51 -i sources/breakingai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/03_complex_3d_environment.mp4
+          ffmpeg -y -ss 00:05:25 -to 00:05:38 -i sources/breakingai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/04_voxel_world.mp4
+          ffmpeg -y -ss 00:07:40 -to 00:07:53 -i sources/breakingai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/05_minecraft_style_game.mp4
+          ffmpeg -y -ss 00:00:39 -to 00:00:50 -i sources/worldofai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/06_pricing.mp4
+          ffmpeg -y -ss 00:01:05 -to 00:01:16 -i sources/worldofai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/07_one_million_tokens.mp4
+          ffmpeg -y -ss 00:05:39 -to 00:05:55 -i sources/worldofai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/08_limited_access.mp4
+          ffmpeg -y -ss 00:09:16 -to 00:09:30 -i sources/worldofai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/09_colosseum_demo.mp4
+          ffmpeg -y -ss 00:11:18 -to 00:11:33 -i sources/worldofai.mp4 -c:v libx264 -preset veryfast -crf 20 -c:a aac clips/10_gemini_vs_gpt6_astra.mp4
+          ls -lh clips
+      - name: Upload clips artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini4-clips
+          path: clips/*.mp4
+          retention-days: 1
